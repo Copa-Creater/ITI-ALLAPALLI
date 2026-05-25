@@ -1,0 +1,6 @@
+{
+  "name": "SkillSeva",
+  "description": "ITI Skills at Your Doorstep - Government-backed trusted on-site service training marketplace.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
