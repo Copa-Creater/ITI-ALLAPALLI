@@ -21,7 +21,11 @@ enum class Screen {
   Schedule,
   BookingSummary,
   TrackService,
-  AdminDashboard
+  AdminDashboard,
+  AboutPOTS,
+  AboutUs,
+  POTSDocument,
+  Profile
 }
 
 enum class Language {
