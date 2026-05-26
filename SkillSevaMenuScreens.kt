@@ -188,14 +188,3 @@ fun ProfileScreen(viewModel: SkillSevaViewModel, language: Language) {
           Column(modifier = Modifier.padding(16.dp)) {
             Text("Customer Dashboard", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
             Spacer(modifier = Modifier.height(16.dp))
-            Text(txt("My Booked Services", "माझ्या सेवा", language), fontWeight = FontWeight.Bold)
-            Text(txt("No past services found.", "कोणतीही जुनी सेवा आढळली नाही.", language), fontSize = 12.sp, color = BrandOnSurfaceVariant)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(txt("Payment History", "पेमेंट इतिहास", language), fontWeight = FontWeight.Bold)
-            Text(txt("No payments found.", "कोणतेही पेमेंट आढळले नाही.", language), fontSize = 12.sp, color = BrandOnSurfaceVariant)
-          }
-        }
-      }
-    }
-  }
-}
