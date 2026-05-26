@@ -11,11 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Setup Java 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -23,21 +21,28 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      # 3. Grant execute permission for gradlew (जर परमिशन नसेल तर)
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Smart Build APK
+        run: |
+          # 1. gradlew फाईल कुठे आहे ते आपोआप शोधणे
+          GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "gradlew file not found in the repository!"
+            exit 1
+          fi
+          
+          # 2. त्या फोल्डरमध्ये जाणे
+          GRADLEW_DIR=$(dirname "$GRADLEW_PATH")
+          cd "$GRADLEW_DIR"
+          
+          # 3. Keystore फाईल तयार करणे
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          
+          # 4. परमिशन देणे आणि ॲप बिल्ड करणे
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      # 4. Generate the missing debug.keystore file
-      - name: Generate debug keystore
-        run: keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-
-      # 5. Build the APK
-      - name: Build APK
-        run: ./gradlew assembleDebug
-
-      # 6. Upload the generated APK so you can download it
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ITI-Allapalli-App
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: '**/*.apk'
