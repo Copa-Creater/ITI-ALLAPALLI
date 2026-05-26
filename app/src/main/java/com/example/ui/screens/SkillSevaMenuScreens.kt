@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.*
 import com.example.viewmodel.Language
 import com.example.viewmodel.SkillSevaViewModel
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun SimpleTopBar(title: String, viewModel: SkillSevaViewModel) {
