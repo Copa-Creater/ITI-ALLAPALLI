@@ -1,200 +1,217 @@
-package com.example.ui.screens
+package com.example.viewmodel
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.PictureAsPdf
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.ui.theme.*
-import com.example.viewmodel.Language
-import com.example.viewmodel.SkillSevaViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.data.AppDatabase
+import com.example.data.Booking
+import com.example.data.BookingRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-@Composable
-fun SimpleTopBar(title: String, viewModel: SkillSevaViewModel) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .statusBarsPadding()
-      .background(BrandSurface)
-      .padding(horizontal = 8.dp, vertical = 8.dp),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    IconButton(onClick = { viewModel.navigateBack() }) {
-      Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = BrandPrimary)
+enum class Screen {
+  LanguageSelection,
+  Login,
+  Dashboard,
+  ServiceDetails,
+  Schedule,
+  BookingSummary,
+  TrackService,
+  AdminDashboard,
+  AboutPOTS,
+  AboutUs,
+  POTSDocument,
+  Profile
+}
+
+enum class Language {
+  English,
+  Marathi
+}
+
+class SkillSevaViewModel(application: Application) : AndroidViewModel(application) {
+  private val repository: BookingRepository
+
+  init {
+    val database = AppDatabase.getDatabase(application)
+    repository = BookingRepository(database.bookingDao())
+    viewModelScope.launch {
+      repository.prepopulateIfEmpty()
     }
-    Text(
-      text = title,
-      fontSize = 18.sp,
-      fontWeight = FontWeight.Bold,
-      color = BrandPrimary
+  }
+
+  // Live list stream of database bookings
+  val bookings: StateFlow<List<Booking>> = repository.allBookings
+    .stateIn(
+      scope = viewModelScope,
+      started = SharingStarted.WhileSubscribed(5000),
+      initialValue = emptyList()
     )
-  }
-}
 
-@Composable
-fun AboutPOTSScreen(viewModel: SkillSevaViewModel, language: Language) {
-  Scaffold(
-    topBar = { SimpleTopBar(txt("What is POTS?", "POTS योजना काय आहे?", language), viewModel) }
-  ) { innerPadding ->
-    LazyColumn(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(innerPadding)
-        .background(BrandBackground)
-        .padding(16.dp)
-    ) {
-      item {
-        Card(
-          colors = CardDefaults.cardColors(containerColor = BrandSurface),
-          modifier = Modifier.fillMaxWidth()
-        ) {
-          Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-              text = txt("Production Oriented Training Scheme", "उत्पादनाभिमुख प्रशिक्षण योजना", language),
-              fontSize = 20.sp,
-              fontWeight = FontWeight.Bold,
-              color = BrandPrimary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-              text = txt(
-                "The Government of Maharashtra has introduced the POTS scheme to give practical, hands-on experience to ITI trainees while providing quality and affordable services to the public.\n\nTrainees work under the strict supervision of expert instructors.",
-                "महाराष्ट्र शासनाने आयटीआय मधील प्रशिक्षणार्थ्यांना प्रत्यक्ष कामाचा अनुभव मिळावा आणि नागरिकांना वाजवी दरात दर्जेदार सेवा मिळावी यासाठी ही योजना सुरू केली आहे.\n\nयामध्ये सर्व कामे तज्ज्ञ निदेशकांच्या (Instructors) देखरेखीखाली केली जातात.",
-                language
-              ),
-              fontSize = 14.sp,
-              color = BrandOnSurfaceVariant,
-              lineHeight = 22.sp
-            )
-          }
-        }
-      }
+  // Current Screen state
+  private val _currentScreen = MutableStateFlow(Screen.LanguageSelection)
+  val currentScreen: StateFlow<Screen> = _currentScreen.asStateFlow()
+
+  // Dynamic system backstack
+  private val backstack = mutableListOf<Screen>()
+
+  fun navigateTo(screen: Screen) {
+    backstack.add(_currentScreen.value)
+    _currentScreen.value = screen
+  }
+
+  fun navigateBack() {
+    if (backstack.isNotEmpty()) {
+      _currentScreen.value = backstack.removeAt(backstack.size - 1)
+    } else {
+      _currentScreen.value = Screen.LanguageSelection
     }
   }
-}
 
-@Composable
-fun AboutUsScreen(viewModel: SkillSevaViewModel, language: Language) {
-  Scaffold(
-    topBar = { SimpleTopBar(txt("About Us", "आमच्याबद्दल", language), viewModel) }
-  ) { innerPadding ->
-    LazyColumn(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(innerPadding)
-        .background(BrandBackground)
-        .padding(16.dp)
-    ) {
-      item {
-        Card(
-          colors = CardDefaults.cardColors(containerColor = BrandSurface),
-          modifier = Modifier.fillMaxWidth()
-        ) {
-          Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-              text = "GOVERNMENT ITI ALLAPALLI",
-              fontSize = 20.sp,
-              fontWeight = FontWeight.Bold,
-              color = BrandPrimary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-              text = txt("Created By", "निर्मिती", language) + ": AMIT .A WASNIK (INSTRUCTOR COPA)",
-              fontSize = 14.sp,
-              fontWeight = FontWeight.SemiBold,
-              color = BrandSecondary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-              text = txt(
-                "This SkillSeva app connects the citizens with ITI Allapalli for various household and professional services. It ensures safety, reliability, and empowers local youth with real-world skills.",
-                "हे स्किल-सेवा ॲप नागरिकांना आयटीआय अहेरी/अल्लापल्ली शी जोडते. यातून घरगुती आणि व्यावसायिक सेवा सुरक्षित व खात्रीशीररीत्या मिळतात आणि स्थानिक तरुणांना प्रत्यक्ष कामाचा अनुभव मिळतो.",
-                language
-              ),
-              fontSize = 14.sp,
-              color = BrandOnSurfaceVariant,
-              lineHeight = 22.sp
-            )
-          }
-        }
-      }
+  // Selected language logic
+  private val _selectedLanguage = MutableStateFlow(Language.English)
+  val selectedLanguage: StateFlow<Language> = _selectedLanguage.asStateFlow()
+
+  fun selectLanguage(language: Language) {
+    _selectedLanguage.value = language
+    navigateTo(Screen.Login)
+  }
+
+  // OTP Login logic States
+  private val _phoneNumber = MutableStateFlow("")
+  val phoneNumber: StateFlow<String> = _phoneNumber.asStateFlow()
+
+  private val _otpCode = MutableStateFlow("")
+  val otpCode: StateFlow<String> = _otpCode.asStateFlow()
+
+  private val _isOtpSent = MutableStateFlow(false)
+  val isOtpSent: StateFlow<Boolean> = _isOtpSent.asStateFlow()
+
+  fun setPhoneNumber(num: String) {
+    val digitsOnly = num.filter { it.isDigit() }
+    if (digitsOnly.length <= 10) {
+      _phoneNumber.value = digitsOnly
     }
   }
-}
 
-@Composable
-fun POTSDocumentScreen(viewModel: SkillSevaViewModel, language: Language) {
-  Scaffold(
-    topBar = { SimpleTopBar(txt("POTS GR PDF", "POTS शासन निर्णय", language), viewModel) }
-  ) { innerPadding ->
-    Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(innerPadding)
-        .background(BrandBackground)
-        .padding(16.dp),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.Center
-    ) {
-      Icon(Icons.Default.PictureAsPdf, contentDescription = "PDF", tint = BrandPrimary, modifier = Modifier.size(64.dp))
-      Spacer(modifier = Modifier.height(16.dp))
-      Text(
-        text = txt("Official Government Resolution for POTS", "POTS योजनेचा अधिकृत शासन निर्णय", language),
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Bold,
-        textAlign = TextAlign.Center
+  fun setOtpCode(code: String) {
+    val digitsOnly = code.filter { it.isDigit() }
+    if (digitsOnly.length <= 6) {
+      _otpCode.value = digitsOnly
+    }
+  }
+
+  fun requestOtp() {
+    if (_phoneNumber.value.length == 10) {
+      _isOtpSent.value = true
+    }
+  }
+
+  fun verifyOtp() {
+    // Generous demo logic: allows any code to authenticate
+    navigateTo(Screen.Dashboard)
+  }
+
+  fun skipToDashboard() {
+    navigateTo(Screen.Dashboard)
+  }
+
+  fun resetLoginState() {
+    _phoneNumber.value = ""
+    _otpCode.value = ""
+    _isOtpSent.value = false
+  }
+
+  // Chosen Service Card logic
+  private val _selectedService = MutableStateFlow("Electrician")
+  val selectedService: StateFlow<String> = _selectedService.asStateFlow()
+
+  fun selectService(service: String) {
+    _selectedService.value = service
+    navigateTo(Screen.ServiceDetails)
+  }
+
+  // Horizontal schedule choices
+  private val _selectedDate = MutableStateFlow("Mon, 12 Oct")
+  val selectedDate: StateFlow<String> = _selectedDate.asStateFlow()
+
+  private val _selectedTimeSlot = MutableStateFlow("10:00 AM")
+  val selectedTimeSlot: StateFlow<String> = _selectedTimeSlot.asStateFlow()
+
+  private val _paymentMethod = MutableStateFlow("online") // "online" or "cash"
+  val paymentMethod: StateFlow<String> = _paymentMethod.asStateFlow()
+
+  fun selectDate(date: String) {
+    _selectedDate.value = date
+  }
+
+  fun selectTimeSlot(slot: String) {
+    _selectedTimeSlot.value = slot
+  }
+
+  fun selectPaymentMethod(method: String) {
+    _paymentMethod.value = method
+  }
+
+  // Placement variables
+  private val _currentActiveBooking = MutableStateFlow<Booking?>(null)
+  val currentActiveBooking: StateFlow<Booking?> = _currentActiveBooking.asStateFlow()
+
+  fun confirmAndPlaceBooking() {
+    viewModelScope.launch {
+      val newBooking = Booking(
+        customerName = "Rahul Deshmukh",
+        customerPhone = _phoneNumber.value.ifEmpty { "9876543210" },
+        customerAddress = "Plot 42, Viman Nagar, Pune, Maharashtra - 411014",
+        serviceType = _selectedService.value,
+        scheduledDate = _selectedDate.value,
+        scheduledTime = _selectedTimeSlot.value,
+        amount = 278.0,
+        status = "Pending",
+        traineeName = "Amit Kulkarni",
+        traineePhotoUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCID21nwQCR2ZmHIlC7GwD6Jzf-ZBSyCXGrVkP5QLI9OH3XiKO6VannECMPouQ__QbQ5yb17EcQTTu6awiXW5oF3cEUauN36DRCSIfpr1BpUur2SbcvXwp4npFBjcQZQWx0hMKKMupd1M6HKGU8Gn7E31Gekb4V2ylDx4-tyJdlpMxbzPb9rhunLvSYQaQdEva_2azuGg3y-EDvDz5yfEe0xJQWma5Z9vDtCW3kKXRk5N-c815JtanH9o1MyeIlQg1TxWsDRd8HOfc-"
       )
-      Spacer(modifier = Modifier.height(8.dp))
-      Text(
-        text = txt(
-          "As per GR dated 03 Feb 2022, 50% of the labor charges generated from services are distributed among trainees, instructors, and staff as an honorarium.",
-          "०३ फेब्रुवारी २०२२ च्या शासन निर्णयानुसार, सेवांमधून मिळणाऱ्या मजुरीच्या उत्पन्नापैकी ५०% रक्कम प्रशिक्षणार्थी, निदेशक आणि कर्मचारी यांच्यात मानधन म्हणून विभागली जाते.",
-          language
-        ),
-        fontSize = 14.sp,
-        textAlign = TextAlign.Center,
-        color = BrandOnSurfaceVariant
-      )
+      repository.insert(newBooking)
+      _currentActiveBooking.value = newBooking
+      _currentScreen.value = Screen.TrackService
     }
   }
-}
 
-@Composable
-fun ProfileScreen(viewModel: SkillSevaViewModel, language: Language) {
-  Scaffold(
-    topBar = { SimpleTopBar(txt("My Account", "माझे खाते", language), viewModel) }
-  ) { innerPadding ->
-    LazyColumn(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(innerPadding)
-        .background(BrandBackground)
-        .padding(16.dp)
-    ) {
-      item {
-        Card(
-          colors = CardDefaults.cardColors(containerColor = BrandSurface),
-          modifier = Modifier.fillMaxWidth()
-        ) {
-          Column(modifier = Modifier.padding(16.dp)) {
-            Text("Customer Dashboard", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(txt("My Booked Services", "माझ्या सेवा", language), fontWeight = FontWeight.Bold)
-            Text(txt("No past services found.", "कोणतीही जुनी सेवा आढळली नाही.", language), fontSize = 12.sp, color = BrandOnSurfaceVariant)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(txt("Payment History", "पेमेंट इतिहास", language), fontWeight = FontWeight.Bold)
-            Text(txt("No payments found.", "कोणतेही पेमेंट आढळले नाही.", language), fontSize = 12.sp, color = BrandOnSurfaceVariant)
-          }
-        }
+  fun updateBookingStatus(booking: Booking, newStatus: String) {
+    viewModelScope.launch {
+      repository.update(booking.copy(status = newStatus))
+    }
+  }
+
+  // Simulated live helper messaging chat
+  private val _chatMessages = MutableStateFlow<List<Pair<String, Boolean>>>(listOf(
+    "Hello! I am on my way to your location." to false,
+    "Please make sure the work area is clear." to false
+  ))
+  val chatMessages: StateFlow<List<Pair<String, Boolean>>> = _chatMessages.asStateFlow()
+
+  fun sendChatMessage(message: String) {
+    if (message.isNotBlank()) {
+      val currentList = _chatMessages.value.toMutableList()
+      currentList.add(message to true)
+      _chatMessages.value = currentList
+
+      // Realist feedback automation
+      viewModelScope.launch {
+        kotlinx.coroutines.delay(1200)
+        val answers = listOf(
+          "Got it! Reaching soon.",
+          "Awesome. On my way.",
+          "Perfect, I am near Viman Nagar.",
+          "Okay, thank you for the info!"
+        )
+        val replyList = _chatMessages.value.toMutableList()
+        replyList.add(answers.random() to false)
+        _chatMessages.value = replyList
       }
     }
   }
