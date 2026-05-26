@@ -65,6 +65,10 @@ fun SkillSevaAppContent(viewModel: SkillSevaViewModel) {
       Screen.BookingSummary -> BookingSummaryScreen(viewModel, selectedLanguage)
       Screen.TrackService -> TrackServiceScreen(viewModel, selectedLanguage)
       Screen.AdminDashboard -> AdminDashboardScreen(viewModel, selectedLanguage)
+      Screen.AboutPOTS -> AboutPOTSScreen(viewModel, selectedLanguage)
+      Screen.AboutUs -> AboutUsScreen(viewModel, selectedLanguage)
+      Screen.POTSDocument -> POTSDocumentScreen(viewModel, selectedLanguage)
+      Screen.Profile -> ProfileScreen(viewModel, selectedLanguage)
     }
   }
 }
@@ -103,7 +107,7 @@ fun LanguageSelectionScreen(viewModel: SkillSevaViewModel) {
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = "GOVT OF MAHARASHTRA",
+            text = "an Initiative by - GOVERNMENT ITI ALLAPALLI",
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = BrandSecondary,
@@ -330,7 +334,7 @@ fun LanguageSelectionScreen(viewModel: SkillSevaViewModel) {
         Spacer(modifier = Modifier.weight(1f))
 
         Text(
-          text = "© 2024 Maharashtra State Board of Vocational Education. All rights reserved.",
+          text = "an Initiative by - GOVERNMENT ITI ALLAPALLI\nCreated By AMIT .A WASNIK (INSTRUCTOR COPA)",
           fontSize = 10.sp,
           color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
           textAlign = TextAlign.Center,
@@ -390,7 +394,7 @@ fun LoginScreen(viewModel: SkillSevaViewModel, language: Language) {
       )
 
       Text(
-        text = txt("GOVERNMENT OF MAHARASHTRA", "महाराष्ट्र शासन", language),
+        text = "an Initiative by - GOVERNMENT ITI ALLAPALLI",
         fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
         color = BrandSecondary,
@@ -591,7 +595,7 @@ fun LoginScreen(viewModel: SkillSevaViewModel, language: Language) {
             modifier = Modifier.size(32.dp)
           )
           Spacer(modifier = Modifier.width(8.dp))
-          Text(text = "Govt. of Maharashtra", fontSize = 11.sp, color = BrandOnSurfaceVariant, lineHeight = 13.sp)
+          Text(text = "an Initiative by\nGOVERNMENT ITI ALLAPALLI", fontSize = 9.sp, color = BrandOnSurfaceVariant, lineHeight = 11.sp)
         }
 
         Box(
@@ -619,6 +623,15 @@ fun LoginScreen(viewModel: SkillSevaViewModel, language: Language) {
           Text(text = "Skill India ITI", fontSize = 11.sp, color = BrandOnSurfaceVariant, lineHeight = 13.sp)
         }
       }
+
+      Spacer(modifier = Modifier.height(16.dp))
+
+      Text(
+        text = "Created By AMIT .A WASNIK (INSTRUCTOR COPA)",
+        fontSize = 10.sp,
+        color = BrandOnSurfaceVariant,
+        textAlign = TextAlign.Center
+      )
     }
   }
 }
@@ -626,9 +639,12 @@ fun LoginScreen(viewModel: SkillSevaViewModel, language: Language) {
 // ----------------------------------------------------
 // 3. Customer Dashboard Screen
 // ----------------------------------------------------
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(viewModel: SkillSevaViewModel, language: Language) {
   var searchQuery by remember { mutableStateOf("") }
+  var showNotifications by remember { mutableStateOf(false) }
+  var showNotificationsDialog by remember { mutableStateOf(false) }
 
   Scaffold(
     topBar = {
@@ -675,7 +691,7 @@ fun DashboardScreen(viewModel: SkillSevaViewModel, language: Language) {
             Icon(Icons.Default.Translate, "Languages", tint = BrandPrimary)
           }
 
-          IconButton(onClick = { /* notification indicator */ }) {
+          IconButton(onClick = { showNotificationsDialog = true }) {
             Box {
               Icon(Icons.Default.Notifications, "Notifications", tint = BrandPrimary)
               Box(
@@ -715,8 +731,14 @@ fun DashboardScreen(viewModel: SkillSevaViewModel, language: Language) {
         )
         NavigationBarItem(
           selected = false,
+          onClick = { viewModel.navigateTo(Screen.Profile) },
+          icon = { Icon(Icons.Default.Person, "Profile") },
+          label = { Text(txt("Profile", "प्रोफाईल", language)) }
+        )
+        NavigationBarItem(
+          selected = false,
           onClick = { viewModel.navigateTo(Screen.LanguageSelection) },
-          icon = { Icon(Icons.Default.Person, "Log Out") },
+          icon = { Icon(Icons.Default.ExitToApp, "Log Out") },
           label = { Text(txt("Log Out", "बाहेर पडा", language)) }
         )
       }
@@ -822,36 +844,38 @@ fun DashboardScreen(viewModel: SkillSevaViewModel, language: Language) {
 
               Spacer(modifier = Modifier.height(12.dp))
 
-              Row(
+              LazyRow(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
               ) {
-                Button(
-                  onClick = { viewModel.navigateTo(Screen.ServiceDetails) },
-                  colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
-                  shape = RoundedCornerShape(8.dp),
-                  modifier = Modifier.testTag("learn_more_button")
-                ) {
-                  Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(txt("Learn More", "अधिक माहिती", language), fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(Icons.Default.ArrowForward, "go", modifier = Modifier.size(14.dp))
-                  }
+                item {
+                  Button(
+                    onClick = { viewModel.navigateTo(Screen.AboutPOTS) },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                    shape = RoundedCornerShape(8.dp)
+                  ) { Text(txt("What is POTS", "POTS काय आहे?", language), fontSize = 12.sp) }
                 }
-
-                // ITI student image
-                AsyncImage(
-                  model = ImageRequest.Builder(LocalContext.current)
-                    .data("https://lh3.googleusercontent.com/aida-public/AB6AXuD8z3uELjQNnd1eXkvXDjsZJ3B8rFnuNQvs32b63ak5xfigGKRuhg9k5FdVdSSj0PAgQD3D5IbbF8CtdQwAsXpvxw7f8BWx60nmhL1t7rUzlPuRcjnnvNFYFggM9sMHCdiJLYbNBWrsR4tdlG1LCbxS8THaVchW9LuJdg6ircuwN3e8ljZJyLY2-a2O0_slPD2epNgq5SkNwbyy-ZKzDPIZiBocR6akmRH8vegeSs_y0pIb9LiH-U1Q9m3IgvnGIg79PqDpZn9hQyrT")
-                    .crossfade(true)
-                    .build(),
-                  contentDescription = "ITI Student Working",
-                  modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                  contentScale = ContentScale.Crop
-                )
+                item {
+                  Button(
+                    onClick = { viewModel.navigateTo(Screen.AboutUs) },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                    shape = RoundedCornerShape(8.dp)
+                  ) { Text(txt("About Us", "आमच्याबद्दल", language), fontSize = 12.sp) }
+                }
+                item {
+                  Button(
+                    onClick = { viewModel.navigateTo(Screen.POTSDocument) },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                    shape = RoundedCornerShape(8.dp)
+                  ) { Text(txt("POTS PDF", "शासन निर्णय", language), fontSize = 12.sp) }
+                }
+                item {
+                  Button(
+                    onClick = { viewModel.navigateTo(Screen.Profile) },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
+                    shape = RoundedCornerShape(8.dp)
+                  ) { Text(txt("My Account", "माझे खाते", language), fontSize = 12.sp) }
+                }
               }
             }
           }
@@ -946,28 +970,42 @@ fun DashboardScreen(viewModel: SkillSevaViewModel, language: Language) {
       // Set explicit items representation
       val servicesList = listOf(
         Triple("Electrician", txt("Electrician", "इलेक्ट्रिशियन", language), Icons.Default.Bolt),
-        Triple("Plumber", txt("Plumber", "प्लंबर", language), Icons.Default.Plumbing),
-        Triple("AC Repair", txt("AC Repair", "एसी दुरुस्ती", language), Icons.Default.AcUnit),
-        Triple("Welding", txt("Welding", "वेल्डिंग", language), Icons.Default.Hardware),
-        Triple("Fabrication", txt("Fabrication", "फॅब्रिकेशन", language), Icons.Default.Construction),
-        Triple("Comp Repair", txt("Comp Repair", "संगणक दुरुस्ती", language), Icons.Default.Computer)
+        Triple("Wireman", txt("Wireman", "वायरमन", language), Icons.Default.ElectricBolt),
+        Triple("MMV", txt("Mechanic Motor", "मेकॅनिक मोटर", language), Icons.Default.DirectionsCar),
+        Triple("Fitter", txt("Fitter", "फिटर", language), Icons.Default.BuildCircle),
+        Triple("Turner", txt("Turner", "टर्नर", language), Icons.Default.PrecisionManufacturing),
+        Triple("Welder", txt("Welder", "वेल्डर", language), Icons.Default.Hardware),
+        Triple("COPA", txt("COPA / Computer", "कोपा / संगणक", language), Icons.Default.Computer),
+        Triple("Dress Making", txt("Dress Making", "ड्रेस मेकिंग", language), Icons.Default.Checkroom),
+        Triple("Carpenter", txt("Carpenter", "सुतारकाम", language), Icons.Default.Handyman),
+        Triple("Tractor Mech", txt("Tractor Mech", "ट्रॅक्टर मेकॅनिक", language), Icons.Default.Agriculture),
+        Triple("Mason", txt("Mason", "गवंडी / बांधकाम", language), Icons.Default.Foundation),
+        Triple("Plumber", txt("Plumber", "प्लंबर", language), Icons.Default.Plumbing)
       )
 
       item {
-        // High quality Material 3 Service item grid cards
+        val filteredList = servicesList.filter { 
+          it.first.contains(searchQuery, ignoreCase = true) || 
+          it.second.contains(searchQuery, ignoreCase = true) 
+        }
+        val chunkedList = filteredList.chunked(2)
+
         Column(
           modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
           verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-          for (rowIdx in 0 until 3) {
+          if (filteredList.isEmpty()) {
+            Text(txt("No services found.", "कोणतीही सेवा आढळली नाही.", language), color = BrandOnSurfaceVariant)
+          }
+          
+          for (rowItems in chunkedList) {
             Row(
               modifier = Modifier.fillMaxWidth(),
               horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-              val first = servicesList[rowIdx * 2]
-              val second = servicesList[rowIdx * 2 + 1]
+              val first = rowItems[0]
 
               // First card
               Card(
@@ -1008,43 +1046,48 @@ fun DashboardScreen(viewModel: SkillSevaViewModel, language: Language) {
                 }
               }
 
-              // Second card
-              Card(
-                modifier = Modifier
-                  .weight(1f)
-                  .clickable { viewModel.selectService(second.first) }
-                  .testTag("service_card_${second.first.lowercase()}"),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = BrandSurface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-              ) {
-                Column(
+              // Second card or empty space
+              if (rowItems.size > 1) {
+                val second = rowItems[1]
+                Card(
                   modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                  horizontalAlignment = Alignment.CenterHorizontally
+                    .weight(1f)
+                    .clickable { viewModel.selectService(second.first) }
+                    .testTag("service_card_${second.first.lowercase()}"),
+                  shape = RoundedCornerShape(12.dp),
+                  colors = CardDefaults.cardColors(containerColor = BrandSurface),
+                  border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
-                  Box(
+                  Column(
                     modifier = Modifier
-                      .size(56.dp)
-                      .background(BrandBackground, CircleShape),
-                    contentAlignment = Alignment.Center
+                      .fillMaxWidth()
+                      .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                   ) {
-                    Icon(second.third, second.second, tint = BrandPrimary, modifier = Modifier.size(28.dp))
+                    Box(
+                      modifier = Modifier
+                        .size(56.dp)
+                        .background(BrandBackground, CircleShape),
+                      contentAlignment = Alignment.Center
+                    ) {
+                      Icon(second.third, second.second, tint = BrandPrimary, modifier = Modifier.size(28.dp))
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(second.second, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandOnSurface)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                      text = "ITI CERTIFIED",
+                      fontSize = 9.sp,
+                      fontWeight = FontWeight.Bold,
+                      color = ColorCertificationGold,
+                      modifier = Modifier
+                        .background(ColorCertificationGold.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
                   }
-                  Spacer(modifier = Modifier.height(8.dp))
-                  Text(second.second, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandOnSurface)
-                  Spacer(modifier = Modifier.height(4.dp))
-                  Text(
-                    text = "ITI CERTIFIED",
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ColorCertificationGold,
-                    modifier = Modifier
-                      .background(ColorCertificationGold.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
-                      .padding(horizontal = 6.dp, vertical = 2.dp)
-                  )
                 }
+              } else {
+                Spacer(modifier = Modifier.weight(1f))
               }
             }
           }
@@ -1282,7 +1325,7 @@ fun ServiceDetailsScreen(viewModel: SkillSevaViewModel, language: Language) {
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-              text = txt("Complete Electrical Service", "कम्प्लीट इलेक्ट्रिशियन सर्व्हिस", language),
+              text = txt("$selectedService Service", "कम्प्लीट $selectedService सर्व्हिस", language),
               fontSize = 24.sp,
               fontWeight = FontWeight.Bold,
               color = Color.White
@@ -1378,38 +1421,65 @@ fun ServiceDetailsScreen(viewModel: SkillSevaViewModel, language: Language) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Item 1
-            Row(verticalAlignment = Alignment.Top) {
-              Text("•", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
-              Spacer(modifier = Modifier.width(8.dp))
-              Column {
-                Text(txt("Fan & Light Repair", "पंखा व लाईट दुरुस्ती", language), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandOnSurface)
-                Text(txt("Installation or repair of ceiling fans, wall fans, and LED fixtures.", "छताचे पंखे, भिंत पंखे आणि एलईडी लाईट्स यांचे नवीन फिटिंग किंवा दुरुस्ती काम.", language), fontSize = 11.sp, color = BrandOnSurfaceVariant)
-              }
+            // Generate dynamic lists based on POTS Prapatra 1 Rules
+            val serviceInclusions = when (selectedService) {
+              "Electrician", "Wireman" -> listOf(
+                Pair(txt("Wiring & Repair", "वायरिंग आणि दुरुस्ती", language), txt("All types of electrical wiring and switchboard repairs.", "वायरिंगची कामे आणि विद्युत संच मांडणी.", language)),
+                Pair(txt("Appliance Repair", "विद्युत उपकरणांची दुरुस्ती", language), txt("Repairing of fans, lights, and home appliances.", "पंखा, लाईट आणि घरातील विद्युत उपकरणांची दुरुस्ती.", language)),
+                Pair(txt("Motor Repair", "मोटारची दुरुस्ती", language), txt("Rewinding and maintenance of electrical motors.", "विद्युत मोटारची दुरुस्ती आणि वाइंडिंगची कामे.", language))
+              )
+              "Plumber" -> listOf(
+                Pair(txt("Pipe Repair", "नळ दुरुस्ती", language), txt("Fixing leakages, broken pipes, and water blockages.", "पाईपची गळती आणि नळ दुरुस्तीची कामे.", language)),
+                Pair(txt("Sanitary Fittings", "स्वच्छता गृह व्यवस्था", language), txt("Installing sinks, toilets, and bathroom fittings.", "स्वच्छता गृह व पिण्याच्या पाण्याची व्यवस्था.", language)),
+                Pair(txt("Drainage Work", "ड्रेनेज दुरुस्ती", language), txt("Clearing out and repairing drainage systems.", "ड्रेनेज आणि सांडपाणी व्यवस्था दुरुस्ती.", language))
+              )
+              "Welder", "Fitter", "Turner" -> listOf(
+                Pair(txt("Metal Furniture", "लोखंडी फर्निचर", language), txt("Making and repairing iron furniture and racks.", "लोखंडी फर्निचर तयार करणे आणि दुरुस्ती.", language)),
+                Pair(txt("Grill Works", "ग्रील बसविणे", language), txt("Creating gates, grills, and window frames.", "दारे, खिडक्या आणि ग्रील तयार करून बसविणे.", language)),
+                Pair(txt("Fabrication", "फॅब्रिकेशन वर्कस", language), txt("All types of structural metal fabrication works.", "सर्व प्रकारची वेल्डिंग आणि फॅब्रिकेशनची कामे.", language))
+              )
+              "Carpenter" -> listOf(
+                Pair(txt("Furniture Making", "लाकडी फर्निचर बनविणे", language), txt("Custom wood furniture, cabinets, and tables.", "तुमच्या आवडीनुसार लाकडी फर्निचर बनविणे.", language)),
+                Pair(txt("Doors & Windows", "दरवाजे आणि खिडक्या", language), txt("Installing and repairing wooden doors/windows.", "दरवाजे, खिडक्या आणि चौकटी बनविणे व दुरुस्ती.", language)),
+                Pair(txt("Computer Lab Setup", "कॉम्प्युटर रुम तयार करणे", language), txt("Woodwork for labs and aluminum partitions.", "कॉम्प्युटर रुम आणि ॲल्युमिनियम पार्टिशन.", language))
+              )
+              "MMV", "Tractor Mech" -> listOf(
+                Pair(txt("Vehicle Servicing", "वाहनांची निगा व दुरुस्ती", language), txt("Complete engine and body servicing of vehicles.", "वाहनांची नियमित सर्व्हिसिंग आणि देखभाल.", language)),
+                Pair(txt("Washing & Cleaning", "वॉशिंग आणि क्लिनिंग", language), txt("Detailed professional vehicle washing.", "शासकीय वॉशिंग सेंटरद्वारे वाहनांची धुलाई.", language)),
+                Pair(txt("PUC & Testing", "पीयुसी टेस्टिंग", language), txt("Vehicle pollution check and diagnostics.", "वाहनांची पीयुसी (PUC) टेस्टिंग व इतर तपासणी.", language))
+              )
+              "Dress Making" -> listOf(
+                Pair(txt("Uniform Stitching", "गणवेष तयार करणे", language), txt("School and industrial uniform stitching.", "शाळेचे आणि कारखान्यांचे गणवेष शिवून देणे.", language)),
+                Pair(txt("Dungaree Making", "डांगरी तयार करणे", language), txt("Professional protective workwear.", "कामासाठी आवश्यक डांगरी तयार करणे.", language)),
+                Pair(txt("General Alteration", "कपड्यांना शिलाई करणे", language), txt("All types of sewing and clothes alteration.", "कपड्यांची शिलाई व दुरुस्तीची सर्व प्रकारची कामे.", language))
+              )
+              "Mason" -> listOf(
+                Pair(txt("Building Repair", "इमारत बांधकाम दुरुस्ती", language), txt("General masonry and wall repairs.", "भिंत आणि इमारत बांधकाम दुरुस्तीची कामे.", language)),
+                Pair(txt("Plastering Work", "प्लास्टरची कामे", language), txt("Internal and external wall plastering.", "भिंतींचे अंतर्गत आणि बाह्य प्लास्टर करणे.", language)),
+                Pair(txt("Tiles & Flooring", "फरशी बसविणे", language), txt("Fixing floor tiles and bathroom flooring.", "घरात आणि बाथरूममध्ये फरशी बसविणे.", language))
+              )
+              "COPA" -> listOf(
+                Pair(txt("Computer Training", "संगणक प्रशिक्षण", language), txt("Basic computer skills and software training.", "कर्मचाऱ्यांचे आणि नागरिकांचे संगणक प्रशिक्षण.", language)),
+                Pair(txt("Data Entry", "संगणक डेटा एंट्री", language), txt("Fast and accurate documentation work.", "डेटा एंट्रीची कामे आणि टायपिंग.", language)),
+                Pair(txt("Software Installation", "सॉफ्टवेअर तयार करणे", language), txt("Installing OS, antivirus, and basic programs.", "सॉफ्टवेअर लोड करणे आणि संगणक वापरावेळी मार्गदर्शन.", language))
+              )
+              else -> listOf(
+                Pair(txt("Professional Service", "व्यावसायिक सेवा", language), txt("Standard ITI certified service execution.", "आयटीआय प्रमाणित उत्कृष्ट सेवा.", language)),
+                Pair(txt("Quality Parts", "दर्जेदार साहित्य", language), txt("Use of durable and verified materials.", "कामात दर्जेदार आणि टिकाऊ साहित्याचा वापर.", language)),
+                Pair(txt("Safety Ensured", "सुरक्षा हमी", language), txt("Follows all standard safety protocols.", "कामाच्या ठिकाणी सुरक्षिततेची पूर्ण काळजी.", language))
+              )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Item 2
-            Row(verticalAlignment = Alignment.Top) {
-              Text("•", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
-              Spacer(modifier = Modifier.width(8.dp))
-              Column {
-                Text(txt("Switchboard Wiring", "स्वीचबोर्ड आणि वायरिंग", language), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandOnSurface)
-                Text(txt("Fixing loose connections, burnt switches, or installing new sockets.", "नवीन बटणे, चार्जिंग सॉकेट्स किंवा जळलेली वायरिंग दुरुस्त करणे.", language), fontSize = 11.sp, color = BrandOnSurfaceVariant)
+            serviceInclusions.forEach { inclusion ->
+              Row(verticalAlignment = Alignment.Top) {
+                Text("•", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                  Text(inclusion.first, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandOnSurface)
+                  Text(inclusion.second, fontSize = 11.sp, color = BrandOnSurfaceVariant)
+                }
               }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Item 3
-            Row(verticalAlignment = Alignment.Top) {
-              Text("•", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
-              Spacer(modifier = Modifier.width(8.dp))
-              Column {
-                Text(txt("Safety Inspection", "तपशीलवार सुरक्षा तपासणी", language), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandOnSurface)
-                Text(txt("Complete check of MCB/ELCB for short circuit prevention.", "शॉर्ट सर्किट टाळण्यासाठी घरातील मुख्य फ्युज आणि एमसीबी बॉक्सची सुरक्षा तपासणी.", language), fontSize = 11.sp, color = BrandOnSurfaceVariant)
-              }
+              Spacer(modifier = Modifier.height(12.dp))
             }
           }
         }
@@ -2738,6 +2808,43 @@ fun AdminDashboardScreen(viewModel: SkillSevaViewModel, language: Language) {
                   fontSize = 14.sp,
                   color = BrandSecondary
                 )
+              }
+
+              if (booking.status == "Completed") {
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                val manpowerAmount = booking.amount * 0.5
+                val principalShare = manpowerAmount * 0.03
+                val vpShare = manpowerAmount * 0.03
+                val staffShare = manpowerAmount * 0.40
+                val storekeeperShare = manpowerAmount * 0.02
+                val cashierShare = manpowerAmount * 0.02
+                
+                Text(
+                  text = "POTS Prapatra 3 Bifurcation (50% Manpower = ₹${manpowerAmount.toInt()})", 
+                  fontSize = 11.sp, 
+                  fontWeight = FontWeight.Bold, 
+                  color = BrandPrimary
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                  Column {
+                    Text("Principal (3%)", fontSize = 10.sp, color = BrandOnSurfaceVariant)
+                    Text("VP/Group Inst (3%)", fontSize = 10.sp, color = BrandOnSurfaceVariant)
+                    Text("Staff/Trainee (40%)", fontSize = 10.sp, color = BrandOnSurfaceVariant)
+                    Text("Storekeeper (2%)", fontSize = 10.sp, color = BrandOnSurfaceVariant)
+                    Text("Cashier (2%)", fontSize = 10.sp, color = BrandOnSurfaceVariant)
+                  }
+                  Column(horizontalAlignment = Alignment.End) {
+                    Text("₹${principalShare.toInt()}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandSecondary)
+                    Text("₹${vpShare.toInt()}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandSecondary)
+                    Text("₹${staffShare.toInt()}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandSecondary)
+                    Text("₹${storekeeperShare.toInt()}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandSecondary)
+                    Text("₹${cashierShare.toInt()}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandSecondary)
+                  }
+                }
               }
             }
           }
